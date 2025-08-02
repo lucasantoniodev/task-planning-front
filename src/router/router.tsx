@@ -10,6 +10,7 @@ import App from '../App';
 import { useAuth } from '../hooks/useAuth.ts';
 import { AuthPage } from '../pages/auth.page.tsx';
 import { LoginPage } from '../pages/login.page.tsx';
+import { RegisterPage } from '../pages/register.page.tsx';
 
 export const ProtectedRoute = ({ children }: PropsWithChildren) => {
   const user = useAuth();
@@ -33,7 +34,15 @@ const loginRoute = createRoute({
   component: LoginPage,
 });
 
-const routeTree = rootRoute.addChildren([authRoute, loginRoute]);
+const registerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/register',
+  component: RegisterPage,
+});
+
+const routes = [authRoute, loginRoute, registerRoute];
+
+const routeTree = rootRoute.addChildren(routes);
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const router = createRouter({ routeTree });

@@ -10,7 +10,7 @@ import {
 } from '@mantine/core';
 import { Navigate, useNavigate } from '@tanstack/react-router';
 import { FirebaseError } from 'firebase/app';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useState } from 'react';
 import cartasIcon from '../assets/cartas.png';
 import { Form } from '../components/form/form.tsx';
@@ -19,12 +19,13 @@ import { TextField } from '../components/form/text-field.tsx';
 import { GoogleButton } from '../components/login/google-button.tsx';
 import { auth } from '../firebase/firebase.ts';
 import { useAuth } from '../hooks/useAuth.ts';
+import type { IUserLogin } from '../interfaces/user-login.inteface.ts';
 import {
-  type IUserLogin,
-  UserLoginSchema,
-} from '../interfaces/user-login.inteface.ts';
+  type IUserRegister,
+  UserRegisterSchema,
+} from '../interfaces/user-register.interface.ts';
 
-export const LoginPage = () => {
+export const RegisterPage = () => {
   const user = useAuth();
 
   if (user) {
@@ -36,23 +37,20 @@ export const LoginPage = () => {
 
 export const Component = () => {
   const navigate = useNavigate();
-  const [loginError, setLoginError] = useState<string | null>(null);
+  const [registerError, setRegisterError] = useState<string | null>(null);
 
-  const handleLoginWithEmailAndPassword = async (user: IUserLogin) => {
+  const handleCreateUserWithEmailAndPassword = async (user: IUserLogin) => {
     try {
-      await signInWithEmailAndPassword(auth, user.email, user.password);
+      await createUserWithEmailAndPassword(auth, user.email, user.password);
     } catch (error) {
       if (error instanceof FirebaseError) {
-        if (
-          error.code === 'auth/wrong-password' ||
-          error.code === 'auth/user-not-found' ||
-          error.code === 'auth/invalid-credential'
-        ) {
-          setLoginError(
-            'Email ou senha incorretos. Verifique e tente novamente.',
+        console.log(error);
+        if (error.code === 'auth/email-already-in-use') {
+          setRegisterError(
+            'Email já cadastrado, faça login ou recupere sua senha.',
           );
         } else {
-          setLoginError(
+          setRegisterError(
             'Ocorreu um erro inesperado. Tente novamente mais tarde.',
           );
         }
@@ -78,10 +76,10 @@ export const Component = () => {
             <img src={cartasIcon} alt="Cartas" className="w-28 h-28 " />
           </div>
           <Title className="font-semibold text-[24px] md:text-[30px] text-[#383838] text-center">
-            Olá, que bom ver você!
+            É sua primeira vez?
           </Title>
           <Text className="text-[16px] md:text-[20px] text-[#A6A6A6] text-center">
-            Faça login com sua conta
+            Cadastre sua conta
           </Text>
 
           <GoogleButton />
@@ -99,41 +97,38 @@ export const Component = () => {
             gap="sm"
             className="w-full max-w-[562px] mt-4 px-2"
           >
-            <Form<typeof UserLoginSchema, IUserLogin>
-              schema={UserLoginSchema}
-              onSubmit={(data) => handleLoginWithEmailAndPassword(data)}
+            <Form<typeof UserRegisterSchema, IUserRegister>
+              schema={UserRegisterSchema}
+              onSubmit={(data) => handleCreateUserWithEmailAndPassword(data)}
+              mode="onChange"
             >
               <TextField name="email" label="Email" required />
               <PasswordField name="password" label="Senha" required />
-              <Group justify="end" w="100%" mt={4}>
-                <UnstyledButton
-                  type="button"
-                  onClick={() => alert('Funcionalidade não implementada.')}
-                >
-                  <Text className="font-semibold text-[#009768] hover:text-green-800">
-                    Esqueceu sua senha?
-                  </Text>
-                </UnstyledButton>
-              </Group>
+              <PasswordField
+                name="confirmPassword"
+                label="Confirmar senha"
+                required
+              />
+
               <Button
                 type="submit"
                 className="bg-[#009768] hover:bg-green-800 mt-10"
                 w="100%"
               >
-                Login
+                Registrar
               </Button>
-              {loginError && (
+              {registerError && (
                 <Text c="red" size="sm" mt="sm" ta="center">
-                  {loginError}
+                  {registerError}
                 </Text>
               )}
             </Form>
 
             <Group w="100%" justify="center" gap={4}>
-              <Text>Não tem uma conta?</Text>
-              <UnstyledButton onClick={() => navigate({ to: '/register' })}>
+              <Text>Já tem uma conta?</Text>
+              <UnstyledButton onClick={() => navigate({ to: '/login' })}>
                 <Text className="font-semibold text-[#009768] hover:text-green-800">
-                  Cadastre-se agora
+                  Fazer login
                 </Text>
               </UnstyledButton>
             </Group>

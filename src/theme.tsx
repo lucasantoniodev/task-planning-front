@@ -1,15 +1,20 @@
-import { createTheme, Text, TextInput } from '@mantine/core';
+import { createTheme, PasswordInput, Text, TextInput } from '@mantine/core';
 
 export const theme = createTheme({
   components: {
     Text: Text.extend({
+      classNames: {
+        root: 'text-[#383838]',
+      },
+    }),
+    TextInput: TextInput.extend({
       styles: {
-        root: {
+        label: {
           color: '#383838',
         },
       },
     }),
-    TextInput: TextInput.extend({
+    PasswordInput: PasswordInput.extend({
       styles: {
         label: {
           color: '#383838',
