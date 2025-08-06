@@ -1,6 +1,6 @@
 import { Navigate } from '@tanstack/react-router';
 import { useAuth } from '../hooks/useAuth.ts';
-import { PlannerPage } from './planner.page.tsx';
+import { NewRoomPage } from './new-room.page.tsx';
 
 export const AuthPage = () => {
   const user = useAuth();
@@ -13,5 +13,5 @@ export const AuthPage = () => {
     return <Navigate to="/login" />;
   }
 
-  return <PlannerPage />;
+  return <NewRoomPage />;
 };
