@@ -12,18 +12,18 @@ import { Navigate, useNavigate } from '@tanstack/react-router';
 import { FirebaseError } from 'firebase/app';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useState } from 'react';
-import cartasIcon from '../assets/cartas.png';
-import { Form } from '../components/form/form.tsx';
-import { PasswordField } from '../components/form/password-field.tsx';
-import { TextField } from '../components/form/text-field.tsx';
-import { GoogleButton } from '../components/login/google-button.tsx';
-import { auth } from '../firebase/firebase.ts';
-import { useAuth } from '../hooks/useAuth.ts';
-import type { IUserLogin } from '../interfaces/user-login.inteface.ts';
+import cartasIcon from '../../assets/cartas.png';
+import { Form } from '../../components/form/form.tsx';
+import { PasswordField } from '../../components/form/password-field.tsx';
+import { TextField } from '../../components/form/text-field.tsx';
+import { GoogleButton } from '../../components/login/google-button.tsx';
+import { auth } from '../../firebase/firebase.ts';
+import { useAuth } from '../../hooks/useAuth.ts';
+import type { IUserLogin } from '../../interfaces/user/user-login.inteface.ts';
 import {
   type IUserRegister,
   UserRegisterSchema,
-} from '../interfaces/user-register.interface.ts';
+} from '../../interfaces/user/user-register.interface.ts';
 
 export const RegisterPage = () => {
   const user = useAuth();

@@ -3,14 +3,17 @@ import {
   createRoute,
   createRouter,
   Navigate,
+  Outlet,
   RouterProvider,
 } from '@tanstack/react-router';
 import type { PropsWithChildren } from 'react';
 import App from '../App';
+import { AppNavbar } from '../components/navbar';
 import { useAuth } from '../hooks/useAuth.ts';
-import { AuthPage } from '../pages/auth.page.tsx';
-import { LoginPage } from '../pages/login.page.tsx';
-import { RegisterPage } from '../pages/register.page.tsx';
+import { LoginPage } from '../pages/login';
+import { NewPlanningRoomPage } from '../pages/new-planning-room';
+import { PlanningRoom } from '../pages/planning-room';
+import { RegisterPage } from '../pages/register';
 
 export const ProtectedRoute = ({ children }: PropsWithChildren) => {
   const user = useAuth();
@@ -20,12 +23,6 @@ export const ProtectedRoute = ({ children }: PropsWithChildren) => {
 
 const rootRoute = createRootRoute({
   component: App,
-});
-
-const authRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/',
-  component: AuthPage,
 });
 
 const loginRoute = createRoute({
@@ -40,14 +37,38 @@ const registerRoute = createRoute({
   component: RegisterPage,
 });
 
-const routes = [authRoute, loginRoute, registerRoute];
+const protectedLayoutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  id: 'protected',
+  component: () => (
+    <ProtectedRoute>
+      <AppNavbar />
+      <Outlet />
+    </ProtectedRoute>
+  ),
+});
 
-const routeTree = rootRoute.addChildren(routes);
+const newPlanningRoomPage = createRoute({
+  getParentRoute: () => protectedLayoutRoute,
+  path: '/',
+  component: NewPlanningRoomPage,
+});
+
+export const planningRoomPage = createRoute({
+  getParentRoute: () => protectedLayoutRoute,
+  path: '/$id',
+  component: PlanningRoom,
+});
+
+const routeTree = rootRoute.addChildren([
+  loginRoute,
+  registerRoute,
+  protectedLayoutRoute.addChildren([newPlanningRoomPage, planningRoomPage]),
+]);
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const router = createRouter({ routeTree });
 
-// Optional for TypeScript autocompletion
 declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router;
