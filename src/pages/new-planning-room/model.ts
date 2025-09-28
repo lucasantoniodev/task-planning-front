@@ -7,5 +7,7 @@ export const NewPlanningRoomSchema = z.object({
 export type NewPlanningRoom = z.infer<typeof NewPlanningRoomSchema>;
 
 export const RedirectSchema = z.object({
-  id: z.string().optional(),
+  id: z
+    .uuid({ error: 'Formato deve ser UUID' })
+    .nonempty({ error: 'Campo obrigatório' }),
 });
