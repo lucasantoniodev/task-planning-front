@@ -144,6 +144,7 @@ export const NewPlanningRoomPage = () => {
             <TextField
               name="title"
               label="Título da sala"
+              placeholder="Digite o título da sala"
               description="Esse título será exibido para todos os participantes"
               styles={{
                 input: {

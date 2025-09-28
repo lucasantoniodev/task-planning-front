@@ -2,10 +2,12 @@ import { Group, Text, UnstyledButton } from '@mantine/core';
 import { openModal } from '@mantine/modals';
 import { mdiAccount, mdiRobot } from '@mdi/js';
 import Icon from '@mdi/react';
+import { useNavigate } from '@tanstack/react-router';
 import { auth } from '../../firebase/firebase.ts';
 import { UserProfile } from './user-profile.tsx';
 
 export function AppNavbar() {
+  const navigate = useNavigate();
   const user = auth.currentUser;
 
   if (!user) {
@@ -27,7 +29,14 @@ export function AppNavbar() {
 
   return (
     <Group bg="#009768" p="md" justify="space-between">
-      <Group>
+      <Group
+        className="cursor-pointer"
+        onClick={async () => {
+          await navigate({
+            to: '/',
+          });
+        }}
+      >
         <Icon color="white" path={mdiRobot} size={1} />
         <Text className="text-white text-4xl font-bold">PlanUp</Text>
       </Group>
