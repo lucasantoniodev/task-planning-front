@@ -2,7 +2,6 @@ import { Group, Text, UnstyledButton } from '@mantine/core';
 import { openModal } from '@mantine/modals';
 import { mdiAccount, mdiRobot } from '@mdi/js';
 import Icon from '@mdi/react';
-import { updateProfile } from 'firebase/auth';
 import { auth } from '../../firebase/firebase.ts';
 import { UserProfile } from './user-profile.tsx';
 
@@ -14,17 +13,17 @@ export function AppNavbar() {
     return <></>;
   }
 
-  const _updateUserPhoto = async () => {
-    try {
-      await updateProfile(user, {
-        photoURL:
-          'https://updateordie.com/wp-content/uploads/2024/04/Thumbnails-UoD-1146x758-5.webp',
-      });
-      console.log('photoURL atualizado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao atualizar photoURL:', error);
-    }
-  };
+  // const _updateUserPhoto = async () => {
+  //   try {
+  //     await updateProfile(user, {
+  //       photoURL:
+  //         'https://updateordie.com/wp-content/uploads/2024/04/Thumbnails-UoD-1146x758-5.webp',
+  //     });
+  //     console.log('photoURL atualizado com sucesso!');
+  //   } catch (error) {
+  //     console.error('Erro ao atualizar photoURL:', error);
+  //   }
+  // };
 
   return (
     <Group bg="#009768" p="md" justify="space-between">

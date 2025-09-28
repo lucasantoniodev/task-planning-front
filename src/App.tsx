@@ -4,6 +4,7 @@ import { Notifications } from '@mantine/notifications';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Outlet } from '@tanstack/react-router';
+import { Snowflakes } from './components/snowflakes';
 import { theme } from './theme';
 
 const queryClient = new QueryClient();
@@ -14,9 +15,8 @@ export default function App() {
       <ModalsProvider>
         <Notifications />
         <QueryClientProvider client={queryClient}>
-          <div className="min-h-screen bg-gray-50 text-gray-900">
-            <Outlet />
-          </div>
+          <Snowflakes />
+          <Outlet />
         </QueryClientProvider>
       </ModalsProvider>
     </MantineProvider>

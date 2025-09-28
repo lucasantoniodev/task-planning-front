@@ -1,9 +1,0 @@
-.name-field .mantine-Input-input {
-  background-color: transparent !important;
-  border-color: #009768;
-  transition: background-color 150ms ease;
-}
-
-.name-field .mantine-Input-input:focus {
-  border-color: #166534;
-}

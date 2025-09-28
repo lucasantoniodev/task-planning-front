@@ -18,7 +18,7 @@ import { PasswordField } from '../../components/form/password-field.tsx';
 import { TextField } from '../../components/form/text-field.tsx';
 import { GoogleButton } from '../../components/login/google-button.tsx';
 import { auth } from '../../firebase/firebase.ts';
-import { useAuth } from '../../hooks/useAuth.ts';
+import { useAuth } from '../../hooks/use-auth.ts';
 import {
   type IUserLogin,
   UserLoginSchema,

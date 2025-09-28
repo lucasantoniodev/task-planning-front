@@ -21,6 +21,7 @@
     "@mantine/notifications": "^8.2.7",
     "@mdi/js": "^7.4.47",
     "@mdi/react": "^1.6.1",
+    "@tabler/icons-react": "^3.35.0",
     "@tanstack/react-query": "^5.85.5",
     "@tanstack/react-router": "^1.128.0",
     "axios": "^1.11.0",
@@ -31,6 +32,7 @@
     "react-google-button": "^0.8.0",
     "react-hook-form": "^7.61.1",
     "react-icons": "^5.5.0",
+    "socket.io-client": "^4.8.1",
     "zod": "^4.0.10"
   },
   "devDependencies": {

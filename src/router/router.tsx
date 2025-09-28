@@ -1,3 +1,4 @@
+import { AppShell } from '@mantine/core';
 import {
   createRootRoute,
   createRoute,
@@ -9,7 +10,7 @@ import {
 import type { PropsWithChildren } from 'react';
 import App from '../App';
 import { AppNavbar } from '../components/navbar';
-import { useAuth } from '../hooks/useAuth.ts';
+import { useAuth } from '../hooks/use-auth.ts';
 import { LoginPage } from '../pages/login';
 import { NewPlanningRoomPage } from '../pages/new-planning-room';
 import { PlanningRoom } from '../pages/planning-room';
@@ -42,8 +43,14 @@ const protectedLayoutRoute = createRoute({
   id: 'protected',
   component: () => (
     <ProtectedRoute>
-      <AppNavbar />
-      <Outlet />
+      <AppShell padding="md" header={{ height: 60 }}>
+        <AppShell.Header>
+          <AppNavbar />
+        </AppShell.Header>
+        <AppShell.Main>
+          <Outlet />
+        </AppShell.Main>
+      </AppShell>
     </ProtectedRoute>
   ),
 });
@@ -54,6 +61,7 @@ const newPlanningRoomPage = createRoute({
   component: NewPlanningRoomPage,
 });
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const planningRoomPage = createRoute({
   getParentRoute: () => protectedLayoutRoute,
   path: '/$id',

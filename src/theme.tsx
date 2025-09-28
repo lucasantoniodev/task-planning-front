@@ -8,6 +8,9 @@ export const theme = createTheme({
       },
     }),
     TextInput: TextInput.extend({
+      classNames: {
+        wrapper: 'text-input',
+      },
       styles: {
         label: {
           color: '#383838',
