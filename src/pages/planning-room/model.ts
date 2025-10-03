@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TaskStatusEnum } from './enums/task-status.enum.ts';
 
 export const PlanningRoomResponseSchema = z.object({
   id: z.uuid(),
@@ -12,6 +13,7 @@ export const TaskSchema = z.object({
   id: z.uuid(),
   description: z.string(),
   points: z.number(),
+  status: z.enum(TaskStatusEnum),
   planningRoomId: z.string(),
 });
 
@@ -25,3 +27,17 @@ export const PlayerSchema = z.object({
 });
 
 export type Player = z.infer<typeof PlayerSchema>;
+
+export const TaskStateSchema = z.object({
+  id: z.uuid(),
+  votes: z.array(
+    z.object({
+      userId: z.uuid(),
+      vote: z.number().default(0),
+    }),
+  ),
+  status: z.enum(TaskStatusEnum),
+  players: z.array(PlayerSchema),
+});
+
+export type TaskState = z.infer<typeof TaskStateSchema>;
