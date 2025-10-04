@@ -7,4 +7,5 @@ export enum TaskPlanningEventsEnum {
   JOIN = 'room:task:join',
   LEAVE = 'room:task:leave',
   TASK_BY_ID = 'room:task:',
+  VOTE = 'room:task:vote',
 }

@@ -21,6 +21,7 @@ export type Task = z.infer<typeof TaskSchema>;
 
 export const PlayerSchema = z.object({
   id: z.uuid(),
+  uid: z.uuid(),
   name: z.string(),
   photoUrl: z.string().optional(),
   joinedAt: z.number(),
@@ -32,7 +33,7 @@ export const TaskStateSchema = z.object({
   id: z.uuid(),
   votes: z.array(
     z.object({
-      userId: z.uuid(),
+      userUid: z.uuid(),
       vote: z.number().default(0),
     }),
   ),
