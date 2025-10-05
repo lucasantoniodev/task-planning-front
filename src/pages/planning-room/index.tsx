@@ -221,11 +221,6 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
     });
   };
 
-  const hasVoted = (userUid: string) =>
-    taskState.votes.some((v) => v.userUid === userUid);
-
-  const currentVote = taskState.votes.find((v) => v.userUid === user.uid);
-
   return (
     <Center className="relative w-full flex-1">
       <Stack className="h-full" align="center" justify="space-between">
@@ -275,60 +270,114 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
         </div>
 
         {/* JOGADORES */}
-        <Group wrap="wrap" justify="center" className="w-full p-4">
-          {taskState.players.map((player) => {
-            const isCurrentUser = player.uid === user.uid;
-            const voted = hasVoted(player.uid);
+        <Card
+          withBorder
+          radius="lg"
+          shadow="md"
+          className="w-full max-w-4xl mx-auto bg-green-50"
+        >
+          <Stack gap="md">
+            <Title order={4} className="text-center text-green-800">
+              Jogadores
+            </Title>
 
-            return (
-              <Stack
-                key={player.id}
-                align="center"
-                className="m-2 min-w-[100px]"
-              >
-                <div className="relative">
-                  <img
-                    src={player.photoUrl}
-                    alt="profile"
-                    className={`w-14 h-14 rounded-full object-cover shadow-md ${
-                      isCurrentUser ? 'ring-2 ring-green-600' : ''
-                    }`}
-                  />
-                  <span
-                    className={`absolute -top-1 -right-1 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shadow ${voted ? 'bg-green-500' : 'bg-red-500'}`}
-                  />
-                </div>
-                <Text size="sm" className="font-medium text-center">
-                  {player.name}
-                </Text>
+            {/* Usuário atual em destaque */}
+            {taskState.players
+              .filter((player) => player.uid === user.uid)
+              .map((player) => {
+                const currentVote = taskState.votes.find(
+                  (v) => v.userUid === player.uid,
+                );
+                return (
+                  <Card
+                    key={player.id}
+                    radius="md"
+                    shadow="sm"
+                    className="bg-green-100 border border-green-300 mx-auto w-fit px-6 py-4"
+                  >
+                    <Stack align="center" gap="xs">
+                      <div className="relative">
+                        <img
+                          src={player.photoUrl}
+                          alt={player.name}
+                          className="w-20 h-20 rounded-full object-cover shadow-lg ring-4 ring-green-500"
+                        />
+                        <span
+                          className={`absolute -top-1 -right-1 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center shadow ${
+                            currentVote ? 'bg-green-500' : 'bg-red-500'
+                          }`}
+                        />
+                      </div>
+                      <Text className="font-semibold text-green-800">
+                        {player.name}
+                      </Text>
 
-                {isCurrentUser && (
-                  <AnimatePresence>
-                    {
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="flex gap-2 mt-1"
-                      >
-                        {[1, 2, 3, 5, 8].map((num) => (
-                          <motion.button
-                            key={num}
-                            whileTap={{ scale: 0.9 }}
-                            className={`w-8 h-12 bg-white rounded-md shadow text-green-800 font-bold ${currentVote?.vote === num && 'bg-green-400'}`}
-                            onClick={() => handleVote(num)}
-                          >
-                            {num}
-                          </motion.button>
-                        ))}
-                      </motion.div>
-                    }
-                  </AnimatePresence>
-                )}
-              </Stack>
-            );
-          })}
-        </Group>
+                      {/* Botões de voto do usuário atual */}
+                      <AnimatePresence>
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          className="flex gap-2 mt-2"
+                        >
+                          {[1, 2, 3, 5, 8].map((num) => (
+                            <motion.button
+                              key={num}
+                              whileTap={{ scale: 0.9 }}
+                              className={`w-10 h-14 bg-white rounded-md shadow text-green-800 font-bold transition ${
+                                currentVote?.vote === num
+                                  ? 'bg-green-400'
+                                  : 'hover:bg-green-200'
+                              }`}
+                              onClick={() => handleVote(num)}
+                            >
+                              {num}
+                            </motion.button>
+                          ))}
+                        </motion.div>
+                      </AnimatePresence>
+                    </Stack>
+                  </Card>
+                );
+              })}
+
+            {/* Outros jogadores */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 justify-center mt-4">
+              {taskState.players
+                .filter((player) => player.uid !== user.uid)
+                .map((player) => {
+                  const voted = taskState.votes.some(
+                    (v) => v.userUid === player.uid,
+                  );
+
+                  return (
+                    <Card
+                      key={player.id}
+                      radius="md"
+                      shadow="sm"
+                      className="flex flex-col items-center py-4 bg-white hover:shadow-md transition"
+                    >
+                      <div className="relative">
+                        <img
+                          src={player.photoUrl}
+                          alt={player.name}
+                          className="w-16 h-16 rounded-full object-cover shadow"
+                        />
+                        <span
+                          className={`absolute -top-1 -right-1 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shadow ${
+                            voted ? 'bg-green-500' : 'bg-red-500'
+                          }`}
+                        />
+                      </div>
+                      <Text size="sm" className="font-medium text-center mt-2">
+                        {player.name}
+                      </Text>
+                    </Card>
+                  );
+                })}
+            </div>
+          </Stack>
+        </Card>
       </Stack>
     </Center>
   );
