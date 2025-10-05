@@ -51,8 +51,13 @@ export const PlanningRoom = () => {
 
   const handleOnClickVote = (task: Task) => {
     openModal({
-      title: <Text className="mb-4 text-green-800">{task.description}</Text>,
+      title: <Text className="text-white">{task.description}</Text>,
       fullScreen: true,
+      classNames: {
+        header: 'bg-green-800 mb-4 text-black',
+        content: 'bg-green-100',
+        close: 'text-white',
+      },
       children: <TaskPlanning task={task} />,
       onClose: () => {
         socket?.emit(TaskPlanningEventsEnum.LEAVE, { taskId: task.id });
@@ -209,7 +214,7 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
     return <></>;
   }
 
-  const handleVote = (value: string) => {
+  const handleVote = (value: number) => {
     socket?.emit(TaskPlanningEventsEnum.VOTE, {
       taskId: task.id,
       value,
@@ -281,43 +286,44 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
                 align="center"
                 className="m-2 min-w-[100px]"
               >
-                <img
-                  src={player.photoUrl}
-                  alt="profile"
-                  className={`w-14 h-14 rounded-full object-cover shadow-md ${
-                    isCurrentUser ? 'ring-2 ring-green-600' : ''
-                  }`}
-                />
+                <div className="relative">
+                  <img
+                    src={player.photoUrl}
+                    alt="profile"
+                    className={`w-14 h-14 rounded-full object-cover shadow-md ${
+                      isCurrentUser ? 'ring-2 ring-green-600' : ''
+                    }`}
+                  />
+                  <span
+                    className={`absolute -top-1 -right-1 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shadow ${voted ? 'bg-green-500' : 'bg-red-500'}`}
+                  />
+                </div>
                 <Text size="sm" className="font-medium text-center">
                   {player.name}
                 </Text>
 
-                {isCurrentUser ? (
+                {isCurrentUser && (
                   <AnimatePresence>
-                    {!currentVote && (
+                    {
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
                         className="flex gap-2 mt-1"
                       >
-                        {['1', '2', '3', '5', '8'].map((num) => (
+                        {[1, 2, 3, 5, 8].map((num) => (
                           <motion.button
                             key={num}
                             whileTap={{ scale: 0.9 }}
-                            className="w-8 h-12 bg-white rounded-md shadow text-green-800 font-bold"
+                            className={`w-8 h-12 bg-white rounded-md shadow text-green-800 font-bold ${currentVote?.vote === num && 'bg-green-400'}`}
                             onClick={() => handleVote(num)}
                           >
                             {num}
                           </motion.button>
                         ))}
                       </motion.div>
-                    )}
+                    }
                   </AnimatePresence>
-                ) : (
-                  <Text size="xs" c="dimmed">
-                    {voted ? 'Votou ✅' : 'Aguardando...'}
-                  </Text>
                 )}
               </Stack>
             );
