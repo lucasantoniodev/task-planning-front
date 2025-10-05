@@ -25,6 +25,7 @@ export const PlayerSchema = z.object({
   name: z.string(),
   photoUrl: z.string().optional(),
   joinedAt: z.number(),
+  isObserver: z.boolean().optional(),
 });
 
 export type Player = z.infer<typeof PlayerSchema>;
