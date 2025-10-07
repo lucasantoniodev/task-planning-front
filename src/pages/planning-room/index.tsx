@@ -3,7 +3,6 @@ import {
   AppShell,
   Box,
   Card,
-  Center,
   Group,
   ScrollArea,
   Stack,
@@ -11,6 +10,7 @@ import {
   Title,
   Tooltip,
 } from '@mantine/core';
+import { useResizeObserver } from '@mantine/hooks';
 import { openModal } from '@mantine/modals';
 import { mdiRobot } from '@mdi/js';
 import Icon from '@mdi/react';
@@ -56,7 +56,7 @@ export const PlanningRoom = () => {
       title: <Text className="text-white">{task.description}</Text>,
       fullScreen: true,
       classNames: {
-        header: 'bg-green-800 mb-4 text-black',
+        header: 'bg-[#009768] mb-4 text-black',
         content: 'bg-green-100',
         close: 'text-white',
       },
@@ -192,8 +192,8 @@ interface TaskPlanningProps {
 
 export function TaskPlanning({ task }: TaskPlanningProps) {
   const user = useAuth();
-
   const { socket } = useSocket();
+  const [ref, result] = useResizeObserver();
   const [taskState, setTaskState] = useState<TaskState>({
     id: task.id,
     votes: [],
@@ -205,35 +205,30 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
     socket?.emit(TaskPlanningEventsEnum.JOIN, { taskId: task.id });
   }, [socket, task.id]);
 
-  // useEffect(() => {
-  //   socket?.on(`${TaskPlanningEventsEnum.TASK_BY_ID}${task.id}`, setTaskState);
-  //   return () => {
-  //     socket?.off(`${TaskPlanningEventsEnum.TASK_BY_ID}${task.id}`);
-  //   };
-  // }, [socket, task.id]);
-
   useEffect(() => {
-    const mockPlayers: Player[] = Array.from({ length: 20 }).map((_, i) => ({
-      id: `mock-${i}`,
-      uid: i === 0 ? '8KJoWODXaBbKqI5vG0qrKDK8FTh1' : `mock-${i}`,
-      name: `Player ${i + 1}`,
-      photoUrl: `https://i.pravatar.cc/150?img=${(i % 70) + 1}`,
-      joinedAt: 0,
-    }));
+    socket?.on(`${TaskPlanningEventsEnum.TASK_BY_ID}${task.id}`, setTaskState);
+    return () => {
+      socket?.off(`${TaskPlanningEventsEnum.TASK_BY_ID}${task.id}`);
+    };
+  }, [socket, task.id]);
 
-    setTaskState((prev) => ({
-      ...prev,
-      players: mockPlayers,
-      votes: mockPlayers.map((player) => ({
-        userUid: player.uid,
-        vote: 0,
-      })),
-    }));
-  }, []);
+  // useEffect(() => {
+  //   const mockPlayers: Player[] = Array.from({ length: 40 }).map((_, i) => ({
+  //     id: `mock-${i}`,
+  //     uid: i === 0 ? '8KJoWODXaBbKqI5vG0qrKDK8FTh1' : `mock-${i}`,
+  //     name: `Player ${i + 1}`,
+  //     photoUrl: `https://i.pravatar.cc/150?img=${(i % 70) + 1}`,
+  //     joinedAt: 0,
+  //   }));
+  //
+  //   setTaskState((prev) => ({
+  //     ...prev,
+  //     players: mockPlayers,
+  //     votes: mockPlayers.map((player) => ({ userUid: player.uid, vote: 0 })),
+  //   }));
+  // }, []);
 
-  if (!user) {
-    return <></>;
-  }
+  if (!user) return null;
 
   const handleVote = (value: number) => {
     socket?.emit(TaskPlanningEventsEnum.VOTE, {
@@ -249,72 +244,27 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
   }).length;
 
   return (
-    <Center className="relative w-full flex-1">
-      <Stack className="h-full" align="center" justify="space-between">
-        {/* MESA CENTRAL */}
-        <div className="relative w-96 h-96 bg-green-800 rounded-full shadow-lg flex items-center justify-center">
-          <Stack gap={0} justify="center" align="center">
-            <Text className="text-white text-4xl font-bold">PlanUp</Text>
-            <Icon color="white" path={mdiRobot} size={1} />
-          </Stack>
-
-          {/* Cartas jogadas */}
-          <AnimatePresence>
-            {taskState.votes.map((vote, index) => {
-              const angle = (index / taskState.votes.length) * 2 * Math.PI;
-              const x = Math.cos(angle) * 190;
-              const y = Math.sin(angle) * 160;
-
-              const player = taskState.players.find(
-                (p) => p.uid === vote.userUid,
-              );
-
-              return (
-                <motion.div
-                  key={vote.userUid}
-                  initial={{ y: 250, opacity: 0, rotate: -20 }}
-                  animate={{
-                    x,
-                    y,
-                    opacity: 1,
-                    rotate: 0,
-                  }}
-                  exit={{ y: 250, opacity: 0 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 18 }}
-                  className="absolute w-14 h-20 bg-white rounded-md shadow-lg flex items-center justify-center"
-                >
-                  {player && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-2 border-white overflow-hidden shadow-md bg-gray-200">
-                      <img
-                        src={player.photoUrl}
-                        alt={player.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                  <Text className="text-green-800 font-bold text-lg">❓</Text>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-        </div>
-
-        {/* JOGADORES */}
+    <div ref={ref} className="flex flex-col lg:flex-row h-full">
+      {/* COLUNA JOGADORES */}
+      <div className="lg:w-1/4 w-full lg:h-auto overflow-y-auto mb-6 lg:mb-0 lg:mr-4">
         <Card
           withBorder
           radius="lg"
           shadow="md"
-          className="w-full max-w-3xl mx-auto bg-green-50"
+          className="w-full h-auto lg:h-full lg:min-h-[850px] lg:max-h-[850px] max-h-[600px] bg-green-50 flex flex-col"
         >
-          <Stack gap="sm">
-            {/* Header com contador e botão revelar */}
+          <Stack gap="sm" className="flex-shrink-0">
+            {/* Header com contador */}
             <Group justify="space-between" align="center">
               <Title order={4} className="text-green-800">
                 Jogadores
               </Title>
-
               <Box
-                className={`px-2 rounded-md ${votedCount === totalActive ? 'bg-green-600' : 'bg-gray-400 cursor-not-allowed'}`}
+                className={`px-2 rounded-md ${
+                  votedCount === totalActive
+                    ? 'bg-green-600'
+                    : 'bg-gray-400 cursor-not-allowed'
+                }`}
               >
                 <Text className="text-white text-sm font-medium transition">
                   {votedCount}/{totalActive}
@@ -337,11 +287,10 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
                     shadow="sm"
                     className="bg-green-100 border border-green-500 mx-auto w-fit px-6 py-4 relative"
                   >
-                    {/* Botão Leave no canto superior direito */}
                     {!player.isObserver && (
                       <button
                         onClick={() => {
-                          socket?.emit(TaskPlanningEventsEnum.LEAVE_VOTING, {
+                          socket?.emit(TaskPlanningEventsEnum.OBSERVER, {
                             taskId: task.id,
                           });
                         }}
@@ -372,6 +321,7 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
                           }`}
                         />
                       </div>
+
                       <button
                         disabled={votedCount !== totalActive}
                         onClick={() => {
@@ -388,22 +338,21 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
                         Revelar
                       </button>
 
-                      {/* Botões de voto - apenas se não for observer */}
                       {!player.isObserver && (
                         <AnimatePresence>
                           <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
-                            className="flex gap-2 mt-2"
+                            className="flex gap-2 mt-2 flex-wrap justify-center"
                           >
-                            {[1, 2, 3, 5, 8].map((num) => (
+                            {[1, 2, 3, 5, 8, 13].map((num) => (
                               <motion.button
                                 key={num}
                                 whileTap={{ scale: 0.9 }}
                                 className={`w-10 h-14 bg-white rounded-md shadow text-green-800 font-bold transition ${
                                   currentVote?.vote === num
-                                    ? 'bg-green-400'
+                                    ? '!bg-green-400'
                                     : 'hover:bg-green-200'
                                 }`}
                                 onClick={() => handleVote(num)}
@@ -418,9 +367,11 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
                   </Card>
                 );
               })}
+          </Stack>
 
-            {/* Outros jogadores */}
-            <div className="flex flex-row gap-4 overflow-x-auto px-2 mt-1 pb-2">
+          {/* Outros jogadores com scroll */}
+          <div className="mt-8 overflow-y-auto pr-2 flex-1">
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-3 gap-4">
               {taskState.players
                 .filter((player) => player.uid !== user.uid)
                 .map((player) => {
@@ -433,7 +384,7 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
                       key={player.id}
                       radius="md"
                       shadow="sm"
-                      className={`flex flex-col border border-green-500 items-center min-w-[80px] py-4 hover:shadow-md transition shrink-0 ${
+                      className={`flex flex-col border border-green-500 items-center py-4 hover:shadow-md transition ${
                         player.isObserver
                           ? 'bg-gray-100 opacity-70'
                           : 'bg-white'
@@ -472,9 +423,53 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
                   );
                 })}
             </div>
-          </Stack>
+          </div>
         </Card>
-      </Stack>
-    </Center>
+      </div>
+
+      {/* MESA CENTRAL */}
+      <div className="flex-1 flex justify-center items-center px-2">
+        <div className="relative w-96 h-96 md:w-[600px] md:h-[600px] bg-green-800 rounded-full shadow-lg flex items-center justify-center">
+          <Stack gap={0} justify="center" align="center">
+            <Text className="text-white text-4xl font-bold">PlanUp</Text>
+            <Icon color="white" path={mdiRobot} size={1} />
+          </Stack>
+
+          <AnimatePresence>
+            {taskState.votes.map((vote, index) => {
+              const { width } = result;
+              const angle = (index / taskState.votes.length) * 2 * Math.PI;
+              const x = Math.cos(angle) * (width > 735 ? 300 : 180);
+              const y = Math.sin(angle) * (width > 735 ? 300 : 180);
+              const player = taskState.players.find(
+                (p) => p.uid === vote.userUid,
+              );
+
+              return (
+                <motion.div
+                  key={vote.userUid}
+                  initial={{ y: 250, opacity: 0, rotate: -20 }}
+                  animate={{ x, y, opacity: 1, rotate: 0 }}
+                  exit={{ y: 250, opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 18 }}
+                  className="absolute w-12 h-16 md:w-14 md:h-20 bg-white rounded-md shadow-lg flex items-center justify-center"
+                >
+                  {player && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-2 border-white overflow-hidden shadow-md bg-gray-200">
+                      <img
+                        src={player.photoUrl}
+                        alt={player.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <Text className="text-green-800 font-bold text-lg">❓</Text>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
   );
 }

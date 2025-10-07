@@ -8,4 +8,6 @@ export enum TaskPlanningEventsEnum {
   LEAVE = 'room:task:leave',
   TASK_BY_ID = 'room:task:',
   VOTE = 'room:task:vote',
+  REVEAL = 'room:task:reveal',
+  OBSERVER = 'room:task:observer',
 }
