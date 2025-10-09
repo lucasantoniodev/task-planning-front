@@ -62,3 +62,13 @@ img {
 .text-input .mantine-Input-input:focus {
   border-color: #166534;
 }
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+.perspective {
+  perspective: 1000px;
+}

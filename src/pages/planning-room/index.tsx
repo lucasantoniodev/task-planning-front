@@ -4,6 +4,7 @@ import {
   Box,
   Card,
   Group,
+  LoadingOverlay,
   ScrollArea,
   Stack,
   Text,
@@ -19,6 +20,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { RevealCountdown } from '../../components/reveal-count-down';
 import { useAuth } from '../../hooks/use-auth.ts';
 import { useSocket } from '../../hooks/use-socket.ts';
 import { planningRoomPage } from '../../router/router.tsx';
@@ -33,10 +35,15 @@ export const PlanningRoom = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
 
-  const { data: currentRoom } = useQuery({
+  const {
+    data: currentRoom,
+    isLoading: loading,
+    isFetching,
+  } = useQuery({
     queryKey: ['planningRoom', id],
     queryFn: () => findPlanningRoomById(id),
   });
+  const isLoading = isFetching || loading;
 
   useEffect(() => {
     if (currentRoom) {
@@ -67,11 +74,12 @@ export const PlanningRoom = () => {
     });
   };
 
-  return !currentRoom ? (
+  return !currentRoom && !isLoading ? (
     <div>Página não encontrada!</div>
   ) : (
     <AppShell padding="md">
       <AppShell.Main>
+        <LoadingOverlay visible={isLoading} />
         <Group justify="space-between" align="start">
           {/* Lista de salas */}
           <Card
@@ -199,7 +207,9 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
     votes: [],
     status: TaskStatusEnum.PENDING,
     players: [],
+    revealed: false,
   });
+  const [showCountdown, setShowCountdown] = useState(false);
 
   useEffect(() => {
     socket?.emit(TaskPlanningEventsEnum.JOIN, { taskId: task.id });
@@ -211,22 +221,6 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
       socket?.off(`${TaskPlanningEventsEnum.TASK_BY_ID}${task.id}`);
     };
   }, [socket, task.id]);
-
-  // useEffect(() => {
-  //   const mockPlayers: Player[] = Array.from({ length: 40 }).map((_, i) => ({
-  //     id: `mock-${i}`,
-  //     uid: i === 0 ? '8KJoWODXaBbKqI5vG0qrKDK8FTh1' : `mock-${i}`,
-  //     name: `Player ${i + 1}`,
-  //     photoUrl: `https://i.pravatar.cc/150?img=${(i % 70) + 1}`,
-  //     joinedAt: 0,
-  //   }));
-  //
-  //   setTaskState((prev) => ({
-  //     ...prev,
-  //     players: mockPlayers,
-  //     votes: mockPlayers.map((player) => ({ userUid: player.uid, vote: 0 })),
-  //   }));
-  // }, []);
 
   if (!user) return null;
 
@@ -242,9 +236,23 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
     const player = taskState.players.find((p) => p.uid === v.userUid);
     return player && !player.isObserver;
   }).length;
+  const revealed = taskState.revealed;
+  console.log(taskState);
 
   return (
     <div ref={ref} className="flex flex-col lg:flex-row h-full">
+      {showCountdown && (
+        <RevealCountdown
+          seconds={3}
+          onFinish={() => {
+            setShowCountdown(false);
+            socket?.emit(TaskPlanningEventsEnum.REVEAL, {
+              taskId: task.id,
+            });
+          }}
+        />
+      )}
+
       {/* COLUNA JOGADORES */}
       <div className="lg:w-1/4 w-full lg:h-auto overflow-y-auto mb-6 lg:mb-0 lg:mr-4">
         <Card
@@ -323,14 +331,10 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
                       </div>
 
                       <button
-                        disabled={votedCount !== totalActive}
-                        onClick={() => {
-                          socket?.emit(TaskPlanningEventsEnum.REVEAL, {
-                            taskId: task.id,
-                          });
-                        }}
+                        disabled={votedCount !== totalActive || revealed}
+                        onClick={() => setShowCountdown(true)}
                         className={`px-3 py-1 rounded-md text-white text-sm font-medium transition ${
-                          votedCount === totalActive
+                          votedCount === totalActive && !revealed
                             ? 'bg-green-600 hover:bg-green-700'
                             : 'bg-gray-400 cursor-not-allowed'
                         }`}
@@ -350,12 +354,16 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
                               <motion.button
                                 key={num}
                                 whileTap={{ scale: 0.9 }}
-                                className={`w-10 h-14 bg-white rounded-md shadow text-green-800 font-bold transition ${
+                                className={`w-10 h-14 bg-white rounded-md shadow ${revealed ? 'text-white' : 'text-green-800'} font-bold transition ${
                                   currentVote?.vote === num
                                     ? '!bg-green-400'
-                                    : 'hover:bg-green-200'
-                                }`}
+                                    : revealed
+                                      ? '!bg-gray-400'
+                                      : 'hover:bg-green-200'
+                                }
+                                `}
                                 onClick={() => handleVote(num)}
+                                disabled={revealed}
                               >
                                 {num}
                               </motion.button>
@@ -429,7 +437,7 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
 
       {/* MESA CENTRAL */}
       <div className="flex-1 flex justify-center items-center px-2">
-        <div className="relative w-96 h-96 md:w-[600px] md:h-[600px] bg-green-800 rounded-full shadow-lg flex items-center justify-center">
+        <div className="relative w-96 h-96 border-[16px] border-green-800 md:w-[600px] md:h-[600px] bg-[#009768] rounded-full shadow-lg flex items-center justify-center">
           <Stack gap={0} justify="center" align="center">
             <Text className="text-white text-4xl font-bold">PlanUp</Text>
             <Icon color="white" path={mdiRobot} size={1} />
@@ -439,8 +447,8 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
             {taskState.votes.map((vote, index) => {
               const { width } = result;
               const angle = (index / taskState.votes.length) * 2 * Math.PI;
-              const x = Math.cos(angle) * (width > 735 ? 300 : 180);
-              const y = Math.sin(angle) * (width > 735 ? 300 : 180);
+              const x = Math.cos(angle) * (width > 735 ? 290 : 180);
+              const y = Math.sin(angle) * (width > 735 ? 290 : 180);
               const player = taskState.players.find(
                 (p) => p.uid === vote.userUid,
               );
@@ -452,8 +460,29 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
                   animate={{ x, y, opacity: 1, rotate: 0 }}
                   exit={{ y: 250, opacity: 0 }}
                   transition={{ type: 'spring', stiffness: 200, damping: 18 }}
-                  className="absolute w-12 h-16 md:w-14 md:h-20 bg-white rounded-md shadow-lg flex items-center justify-center"
+                  className="absolute w-12 h-16 md:w-14 md:h-20 perspective"
                 >
+                  <motion.div
+                    className="w-full h-full relative"
+                    animate={{ rotateY: taskState.revealed ? 180 : 0 }}
+                    transition={{ duration: 0.6 }}
+                    style={{ transformStyle: 'preserve-3d' }}
+                  >
+                    {/* Frente */}
+                    <div className="absolute inset-0 bg-white rounded-md shadow-lg flex items-center justify-center backface-hidden">
+                      <Text className="text-green-800 font-bold text-lg">
+                        ❓
+                      </Text>
+                    </div>
+
+                    {/* Verso */}
+                    <div className="absolute inset-0 bg-green-400 rounded-md shadow-lg flex items-center justify-center rotate-y-180 backface-hidden">
+                      <Text className="text-white font-bold text-lg">
+                        {vote.vote}
+                      </Text>
+                    </div>
+                  </motion.div>
+
                   {player && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-2 border-white overflow-hidden shadow-md bg-gray-200">
                       <img
@@ -463,7 +492,6 @@ export function TaskPlanning({ task }: TaskPlanningProps) {
                       />
                     </div>
                   )}
-                  <Text className="text-green-800 font-bold text-lg">❓</Text>
                 </motion.div>
               );
             })}

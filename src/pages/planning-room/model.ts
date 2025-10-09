@@ -40,6 +40,7 @@ export const TaskStateSchema = z.object({
   ),
   status: z.enum(TaskStatusEnum),
   players: z.array(PlayerSchema),
+  revealed: z.boolean().optional().default(false),
 });
 
 export type TaskState = z.infer<typeof TaskStateSchema>;
